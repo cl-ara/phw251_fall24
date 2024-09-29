@@ -21,17 +21,10 @@ data <- read_csv("~/phw251_fall24_cv/week 5/500_Person_Gender_Height_Weight.csv"
 Clean the column headers to be all lower case, have no spaces, and rename "Location information" to location.
 
 ```{r clean}
-data <- 
-  rename_with(
-  data,             # data frame
-  ~ tolower(           # function call (using tolower())
-    gsub(" ",          # embedded gsub() checking for empty spaces pattern " "
-         "_",          # replace pattern with underscore "_"
-         .x,           # .x is the placeholder for every column in the data frame
-         fixed = TRUE) # pattern must match exactly
-    )) %>%
+data <- data %>%
   rename(
-    location = location_information
+    location = `Location information`,
+    gender = GENDER
   )
 
 colnames(data)
@@ -54,7 +47,7 @@ You will need to navigate the different system of measurements (metric vs imperi
 Although there's many ways you can accomplish this task, we want you to use an if_else() to calculate BMI with the appropriate formula based on each person's location. 
 
 ```{r bmi_calc}
-head(data)
+# head(data)
 
 data <- data %>%
   mutate(
@@ -89,6 +82,7 @@ data <- data %>% mutate(
     )
 )
 
+head(data)
 ```
 
 Could we have used if_else()?  
@@ -114,7 +108,7 @@ head(data)
 Use a dplyr method to remove the height, weight, and BMI columns from your data.
 
 ```{r remove_cols}
-colnames(data)
+# colnames(data)
 
 data <- data %>% select(location, gender, bmi_cat)
 
@@ -152,5 +146,5 @@ data <- read_csv("~/phw251_fall24_cv/week 5/500_Person_Gender_Height_Weight.csv"
   arrange(location, desc(bmi)) %>%
   select(location, gender, bmi_cat)
   
-  
+head(data)
 ```

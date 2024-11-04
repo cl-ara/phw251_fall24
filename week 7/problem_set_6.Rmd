@@ -231,7 +231,7 @@ head(df)
 ```{r}
 sum(is.na(df$outcome))
 ```
-
+\newpage 
 
 ### Question 8
 

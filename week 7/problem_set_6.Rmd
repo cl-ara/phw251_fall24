@@ -283,7 +283,10 @@ Data coding:
 To make it slightly more challenging we have changed the format from a .csv to .xlsx and "hidden" the data one level deeper in the /data folder. Take a look at the data to get oriented. Please use "placebo_df" as the name of your data frame.
 
 ```{r}
-placebo_df <- read_csv("~/phw251_fall24_cv/week 6/data/missing_interventions.csv")
+library(readxl)
+placebo_df <- 
+  read_xlsx(
+    "~/PHW251_2024/problem_sets/problem_set_6/data/one_level_deeper/non_deceptive_placebo.xlsx")
 ```
 
 \newpage
@@ -299,9 +302,9 @@ The stringr function 'str_detect()' will be useful here!
 ```{r}
 placebo_df <- placebo_df %>% mutate(
   GROUP = case_when(
-    str_detect(ID, "P") ~ "P",
-    str_detect(ID, "C") ~ "C",
-    str_detect(ID, "N") ~ "N",
+    str_detect(ID, "P") ~ "Placebo",
+    str_detect(ID, "C") ~ "Control",
+    str_detect(ID, "N") ~ "Non-deceptive placebo",
     TRUE ~ NA
   )
 )
@@ -325,7 +328,14 @@ We have a similar issue telling apart the pre- and post- observations.
 Unfortunately, the two research sites were not consistent in their naming convention. You will need to consider the different cases. 
 
 ```{r}
-
+placebo_df <- placebo_df %>%
+  mutate(TEST=
+           case_when(
+             str_detect(ID, "pre") ~ "pre",
+             str_detect(ID, "post") ~ "post",
+             str_detect(ID, "PRE") ~ "pre",
+             str_detect(ID, "POST") ~ "post",
+           ))
 ```
 
 **11B. Print the head() of the dataframe** 
@@ -345,7 +355,9 @@ There were differences in the formatting for dates across the two research sites
 Hint: Check out ?parse_date_time
 
 ```{r}
-# your code here
+placebo_df <- placebo_df %>% mutate(
+  DATEFIX= parse_date_time(DATE, orders = c("B d, Y", "d-b-y")) %>% as.Date()
+)
 ```
 
 
@@ -365,7 +377,11 @@ You realize there was a strange error in your excel file that, for every date, p
 **13A. Create a new column called "DATE_FIX_2" that fixes the date.**
 
 ```{r}
-# your code here
+placebo_df <- placebo_df %>% mutate(
+  DATE_FIX_2 = DATEFIX - years(1)
+)
+
+placebo_df
 ```
 
 \newpage 
@@ -377,7 +393,9 @@ You realize there was a strange error in your excel file that, for every date, p
 **14B. Afterwards, rename DATE_FIX2 to DATE**
 
 ```{r}
-# your code here
+placebo_df <- placebo_df %>% 
+  select(ID, LOCATION, DATE_FIX_2, PAIN_RATE, GROUP, TEST) %>% 
+  rename(DATE = DATE_FIX_2)
 ```
 
 **14C. Print the head() of the dataframe** 
@@ -399,22 +417,22 @@ You may need to install ggthemes.
 
 ```{r}
 # install.packages("ggthemes")
-# library(ggthemes)
-# 
-# df_plot <- placebo_df %>% 
-#   group_by(GROUP, LOCATION) %>%
-#   summarize(MEAN_PAIN = mean(PAIN_RATE))
-# 
-# ggplot(df_plot, aes(x = LOCATION, y = MEAN_PAIN, fill = GROUP)) +
-#   geom_col(position = "dodge") +
-#   ylim(0, 10) +
-#   theme_few() +
-#   scale_fill_few("Medium") +
-#   theme(axis.title = element_blank(),
-#         axis.title.y = element_text()) +
-#   labs(fill = "Group",
-#        title = "Non-deceptive placebo study",
-#        y = "Pain rating")
+library(ggthemes)
+
+df_plot <- placebo_df %>%
+  group_by(GROUP, LOCATION) %>%
+  summarize(MEAN_PAIN = mean(PAIN_RATE))
+
+ggplot(df_plot, aes(x = LOCATION, y = MEAN_PAIN, fill = GROUP)) +
+  geom_col(position = "dodge") +
+  ylim(0, 10) +
+  theme_few() +
+  scale_fill_few("Medium") +
+  theme(axis.title = element_blank(),
+        axis.title.y = element_text()) +
+  labs(fill = "Group",
+       title = "Non-deceptive placebo study",
+       y = "Pain rating")
 ```
 
 For a quick first pass we think this visualization isn't so bad. However, logically, we think that the order of the groups should be: Control, Placebo, Non-deceptive. 
@@ -424,7 +442,25 @@ For a quick first pass we think this visualization isn't so bad. However, logica
 If done correctly, when you re-run the above chunk, the plot should show the bars in that order
 
 ```{r}
-# your code here
+placebo_df <- 
+  placebo_df %>% 
+  mutate(GROUP = 
+           factor(GROUP, levels = c("Control", "Placebo", "Non-deceptive placebo")))
+
+df_plot <- placebo_df %>%
+  group_by(GROUP, LOCATION) %>%
+  summarize(MEAN_PAIN = mean(PAIN_RATE))
+
+ggplot(df_plot, aes(x = LOCATION, y = MEAN_PAIN, fill = GROUP)) +
+  geom_col(position = "dodge") +
+  ylim(0, 10) +
+  theme_few() +
+  scale_fill_few("Medium") +
+  theme(axis.title = element_blank(),
+        axis.title.y = element_text()) +
+  labs(fill = "Group",
+       title = "Non-deceptive placebo study",
+       y = "Pain rating")
 ```
 
 
